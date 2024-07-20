@@ -51,6 +51,32 @@ def transform_data(df_animals, df_health):
 
     return df
 
+def aggregate_and_validate():
+    '''
+    Aggregates and validates the transformed zoo data.
+
+    This function reads the transformed zoo data, aggregates it to count the number of animals
+    per species and the count of each health status. It then validates that no data is missing
+    and saves the aggregated results to CSV files.
+
+    Raises:
+        ValueError: If any data is missing during validation.
+    '''
+    df = pd.read_csv('./files/transformed_zoo_data.csv')
+
+    # Aggregate data
+    species_count = df.groupby('species').size().reset_index(name='species_count')
+    health_status_count = df['health_status'].value_counts().reset_index()
+    health_status_count.columns = ['health_status', 'count']
+
+    # Validate data
+    if species_count.isnull().values.any() or health_status_count.isnull().values.any():
+        raise ValueError("Validation failed: Missing data")
+
+    # Save intermediate aggregated data
+    species_count.to_csv('./files/species_count.csv', index=False)
+    health_status_count.to_csv('./files/health_status_count.csv', index=False)
+
 def main():
     df_animals = extract_zoo_animals()
     df_health = extract_zoo_health_records()
@@ -58,6 +84,8 @@ def main():
     df_transformed = transform_data(df_animals, df_health)
 
     df_transformed.to_csv('./files/transformed_zoo_data.csv', index=False)
+
+    aggregate_and_validate()
 
 if __name__ == "__main__":
     main()
