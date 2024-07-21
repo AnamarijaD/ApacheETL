@@ -20,7 +20,6 @@ def extract_zoo_health_records():
     df_health = pd.read_csv('./files/zoo_health_records.csv')
     return df_health
 
-
 def transform_data(df_animals, df_health):
     '''
     Transforms the extracted zoo data.
@@ -77,6 +76,30 @@ def aggregate_and_validate():
     species_count.to_csv('./files/species_count.csv', index=False)
     health_status_count.to_csv('./files/health_status_count.csv', index=False)
 
+def load_final_data():
+    '''
+    Loads transformed and aggregated zoo data, combines them, and saves the final dataset.
+
+    This function reads the transformed zoo data, as well as the aggregated species and health status counts.
+    It then merges these datasets into a single DataFrame and saves the combined data to 'final_zoo_data.csv'.
+    '''
+    transformed_data = pd.read_csv('./files/transformed_zoo_data.csv')
+
+    species_count = pd.read_csv('./files/species_count.csv')
+    health_status_count = pd.read_csv('./files/health_status_count.csv')
+
+    # Create a copy of the transformed data to avoid modifying the original DataFrame
+    final_data = transformed_data.copy()
+
+    # Add aggregated data as new columns
+    final_data = final_data.assign(
+        species_count=final_data['species'].map(species_count.set_index('species')['species_count']),
+        health_status_count=final_data['health_status'].map(health_status_count.set_index('health_status')['count'])
+    )
+
+    # Save the final combined data to 'final_zoo_data.csv'
+    final_data.to_csv('./files/final_zoo_data.csv', index=False)
+
 def main():
     df_animals = extract_zoo_animals()
     df_health = extract_zoo_health_records()
@@ -86,6 +109,7 @@ def main():
     df_transformed.to_csv('./files/transformed_zoo_data.csv', index=False)
 
     aggregate_and_validate()
+    load_final_data()
 
 if __name__ == "__main__":
     main()
