@@ -1,4 +1,26 @@
 import pandas as pd
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from datetime import datetime, timedelta
+
+# Default arguments for the DAG
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'start_date': datetime.now(),
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
+
+# Define the DAG
+dag = DAG(
+    'zoo_etl_pipeline',
+    default_args=default_args,
+    description='ETL pipeline for zoo animal data',
+    schedule_interval=timedelta(days=1),
+)
 
 def extract_zoo_animals():
     '''
